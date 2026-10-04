@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 使用无标题栏主题，让网页成为完整的应用主界面。 -->
+    <style name="Theme.CocktailLab" parent="android:style/Theme.Material.NoActionBar">
+        <item name="android:fontFamily">sans</item>
+        <item name="android:windowActionModeOverlay">true</item>
+        <item name="android:windowBackground">@color/cocktail_background</item>
+        <item name="android:colorAccent">@color/cocktail_gold</item>
+        <item name="android:statusBarColor">@color/cocktail_background</item>
+        <item name="android:navigationBarColor">@color/cocktail_background</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+</resources>
