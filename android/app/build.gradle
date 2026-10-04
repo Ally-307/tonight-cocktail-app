@@ -1,0 +1,35 @@
+plugins {
+    id "com.android.application"
+}
+
+android {
+    namespace "com.ally307.cocktaillab"
+    compileSdk 35
+
+    defaultConfig {
+        applicationId "com.ally307.cocktaillab"
+        minSdk 24
+        targetSdk 35
+        versionCode 7
+        versionName "1.5.0"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    sourceSets {
+        main {
+            // 直接打包现有网页目录，确保网页版和 APK 始终共用同一份内容。
+            assets.srcDirs = ["../../src"]
+        }
+    }
+}

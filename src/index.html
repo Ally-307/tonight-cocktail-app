@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b0e0d" />
+  <title>今夜调酒</title>
+  <link rel="stylesheet" href="app-v2.css" />
+</head>
+<body>
+  <!--
+    THESIS: 大摇杯是普通用户的一级入口，打开后以调酒票据选择今晚的任务。
+    OWN-WORLD: 家庭吧台备料台、瓶绿、钢材、柑橘黄和纸质票据组成完整视觉语言。
+    STORY: 打开摇杯 → 选择随机/材料/酒单/收藏 → 查看配方 → 按步骤完成调制。
+    FIRST VIEWPORT: 只保留标题、大摇杯和打开提示；功能票据由一次明确互动揭示。
+  -->
+  <main class="app-shell">
+    <section class="app-frame" aria-label="今夜调酒应用">
+      <div class="grain" aria-hidden="true"></div>
+
+      <section class="home-stage">
+        <div class="stage-copy">
+          <h1>今晚，<br />从一杯开始。</h1>
+          <p>不用先懂酒名。打开摇杯，按你手边的材料开始。</p>
+          <div class="prompt-strip">START TONIGHT</div>
+        </div>
+
+        <div class="shaker-wrap">
+          <div class="shaker-halo" aria-hidden="true"></div>
+          <button class="shaker-button" type="button" aria-label="打开调酒功能" aria-expanded="false">
+            <span class="shaker-cap" aria-hidden="true"></span>
+            <span class="shaker-neck" aria-hidden="true"></span>
+            <span class="shaker-body" aria-hidden="true"></span>
+            <span class="shaker-label" aria-hidden="true">TONIGHT<b>PREP</b></span>
+            <span class="shaker-base" aria-hidden="true"></span>
+          </button>
+        </div>
+
+        <div class="ticket-stack" aria-label="调酒功能">
+          <div class="ticket-stack-inner">
+          <button class="ticket" type="button" data-mode="random">
+            <span class="ticket-label">RANDOM</span>
+            <span class="ticket-copy"><strong>随机抽一杯</strong><span>交给今晚一点灵感</span></span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 7h10l-2.5-2.5M19 17H9l2.5 2.5M17 4l2 3-2 3M7 20l-2-3 2-3" /></svg>
+          </button>
+          <button class="ticket" type="button" data-mode="materials">
+            <span class="ticket-label">MATERIALS</span>
+            <span class="ticket-copy"><strong>按材料匹配</strong><span>看看手头能调什么</span></span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="9" r="4" /><path d="m12 12 7 7M15 5h4M17 3v4" /></svg>
+          </button>
+          <button class="ticket" type="button" data-mode="library">
+            <span class="ticket-label">LIBRARY</span>
+            <span class="ticket-copy"><strong>浏览酒单</strong><span>慢慢挑一杯喜欢的</span></span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 5.5A2.5 2.5 0 0 1 7.5 3H19v16H7.5A2.5 2.5 0 0 0 5 21.5v-16Z" /><path d="M5 5.5v16M9 7h6M9 11h6" /></svg>
+          </button>
+          <button class="ticket" type="button" data-mode="saved">
+            <span class="ticket-label">SAVED</span>
+            <span class="ticket-copy"><strong>我的收藏</strong><span>回到已经喜欢的配方</span></span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 4.5A2.5 2.5 0 0 1 8.5 2h7A2.5 2.5 0 0 1 18 4.5V21l-6-3-6 3V4.5Z" /></svg>
+          </button>
+          </div>
+        </div>
+
+        <p class="status-message" role="status" aria-live="polite">点击摇杯，打开今晚的调酒入口</p>
+      </section>
+
+      <div class="layer-context" aria-hidden="true">
+        <div class="layer-band" data-layer-band="0"><span>01</span><strong>大摇杯入口</strong></div>
+        <div class="layer-band" data-layer-band="1"><span>02</span><strong>功能分类</strong></div>
+        <div class="layer-band" data-layer-band="2"><span>03</span><strong>内容选择</strong></div>
+      </div>
+
+      <section class="task-surface" data-level="2" data-view="task" aria-label="调酒任务" hidden>
+        <div class="task-top">
+          <button class="back-button" type="button" aria-label="返回上一级">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 5-7 7 7 7" /></svg>
+            <span>回到摇杯</span>
+          </button>
+          <div class="task-classification" aria-label="当前层级">
+            <span class="task-level">L2</span>
+            <strong class="task-kicker">TONIGHT / TASK</strong>
+          </div>
+          <button class="sound-toggle" type="button" data-sound-toggle aria-label="关闭调酒音效" aria-pressed="true">声音 开</button>
+        </div>
+        <nav class="task-path" aria-label="当前位置"></nav>
+        <div class="task-copy">
+          <h2>今晚想从哪里开始？</h2>
+          <p>选择一个入口，继续完成今晚的第一杯。</p>
+        </div>
+        <div class="task-content"></div>
+        <div class="task-footer">
+          <button class="task-primary" type="button">继续</button>
+          <button class="task-secondary" type="button" hidden>返回</button>
+        </div>
+      </section>
+
+      <div class="toast" role="status" aria-live="polite"></div>
+      <noscript><div class="empty-ticket"><div><strong>需要启用 JavaScript</strong><span>配方筛选和逐步调制依赖本地脚本运行。</span></div></div></noscript>
+    </section>
+  </main>
+
+  <script src="market-drinks.js"></script>
+  <script src="app-v2.js"></script>
+</body>
+</html>

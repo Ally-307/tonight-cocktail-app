@@ -1,0 +1,650 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>今夜调酒 · UI 重设计预览</title>
+  <style>
+    :root {
+      --ink-900: #111615;
+      --ink-800: #1c2522;
+      --bottle-700: #245247;
+      --bottle-500: #39776a;
+      --steel-300: #b8c2be;
+      --ticket-100: #f1ebdd;
+      --ink-100: #f7f4ed;
+      --citrus-500: #f2b544;
+      --vermilion-500: #d9573f;
+      --herb-500: #7ead76;
+      --muted-500: #8d9a95;
+      --line: rgba(241, 235, 221, 0.16);
+      --motion-enter: cubic-bezier(0.16, 1, 0.3, 1);
+      --sans: "Noto Sans SC", "Microsoft YaHei", "Segoe UI", sans-serif;
+      --mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+    }
+
+    * { box-sizing: border-box; }
+    html { min-width: 320px; background: #0b0e0d; }
+    body { min-width: 320px; margin: 0; color: var(--ink-100); background: #0b0e0d; font-family: var(--sans); }
+    button { font: inherit; }
+    button, a { -webkit-tap-highlight-color: transparent; }
+    button:focus-visible { outline: 3px solid var(--citrus-500); outline-offset: 4px; }
+
+    .preview-shell {
+      width: min(100%, 1440px);
+      min-height: 100vh;
+      margin: 0 auto;
+      padding: 32px;
+      background: #0b0e0d;
+    }
+
+    .preview-label {
+      max-width: 560px;
+      margin: 0 auto 18px;
+      color: var(--muted-500);
+      font: 600 11px/1.4 var(--mono);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .app-frame {
+      position: relative;
+      width: min(100%, 480px);
+      min-height: 844px;
+      margin: 0 auto;
+      overflow: hidden;
+      border: 1px solid rgba(241, 235, 221, 0.2);
+      border-radius: 28px;
+      background:
+        radial-gradient(circle at 50% 31%, rgba(57, 119, 106, 0.24), transparent 28%),
+        linear-gradient(145deg, #111615 0%, #17221f 58%, #0f1513 100%);
+      perspective: 1200px;
+      box-shadow: 0 26px 80px rgba(0, 0, 0, 0.42);
+    }
+
+    .grain {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.06;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.95' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.7'/%3E%3C/svg%3E");
+      mix-blend-mode: screen;
+    }
+
+    .home-stage {
+      position: relative;
+      z-index: 1;
+      min-height: 844px;
+      padding: 58px 24px 30px;
+      transform-origin: 50% 42%;
+      transition: transform 420ms var(--motion-enter), opacity 260ms ease;
+    }
+    .app-frame.is-task-open .home-stage {
+      opacity: 0.28;
+      transform: translateY(-8px) scale(0.982);
+      pointer-events: none;
+    }
+
+    .stage-copy { max-width: 280px; margin: 0 auto; text-align: center; }
+    .stage-copy h1 { margin: 0; font-size: clamp(28px, 8vw, 38px); line-height: 1.1; letter-spacing: -0.06em; }
+    .stage-copy p { margin: 11px 0 0; color: var(--muted-500); font-size: 13px; line-height: 1.55; }
+
+    .shaker-wrap { position: relative; display: grid; place-items: center; min-height: 340px; margin: 14px auto 8px; }
+    .shaker-halo { position: absolute; width: 250px; height: 250px; border: 1px solid rgba(242, 181, 68, 0.26); border-radius: 50%; box-shadow: 0 24px 42px rgba(0, 0, 0, 0.24); }
+    .shaker-button {
+      position: relative;
+      z-index: 1;
+      width: 170px;
+      height: 230px;
+      border: 0;
+      color: var(--ink-100);
+      background: transparent;
+      cursor: pointer;
+      transition: transform 330ms cubic-bezier(.2,.9,.2,1);
+    }
+    .shaker-button:hover { transform: translateY(-4px) rotate(-1deg); }
+    .shaker-button.is-open { transform: translateY(-3px) rotate(4deg); }
+    .shaker-cap { position: absolute; top: 8px; left: 50%; width: 72px; height: 40px; transform: translateX(-50%); border: 2px solid var(--steel-300); border-bottom: 0; border-radius: 12px 12px 5px 5px; background: #71817b; box-shadow: inset 0 5px 0 rgba(247, 244, 237, 0.18), 0 17px 26px rgba(0, 0, 0, 0.25); }
+    .shaker-neck { position: absolute; top: 43px; left: 50%; width: 96px; height: 30px; transform: translateX(-50%); border: 2px solid var(--steel-300); border-radius: 6px; background: var(--bottle-700); }
+    .shaker-body { position: absolute; top: 65px; left: 50%; width: 142px; height: 150px; transform: translateX(-50%); border: 2px solid var(--steel-300); border-radius: 29px 29px 42px 42px; background: linear-gradient(90deg, #5d7069 0%, #aab5ae 44%, #71817b 100%); box-shadow: inset 9px 0 0 rgba(255, 255, 255, 0.18), inset -12px 0 0 rgba(17, 22, 21, 0.18), 0 28px 36px rgba(0, 0, 0, 0.36); }
+    .shaker-body::before { content: ""; position: absolute; top: 24px; left: 21px; width: 92px; height: 2px; background: rgba(17, 22, 21, 0.4); box-shadow: 0 18px 0 rgba(17, 22, 21, 0.24), 0 36px 0 rgba(17, 22, 21, 0.18); }
+    .shaker-label { position: absolute; top: 110px; left: 50%; width: 89px; padding: 10px 4px 8px; transform: translateX(-50%) rotate(-3deg); color: var(--ink-900); background: var(--ticket-100); font: 700 10px/1.15 var(--mono); letter-spacing: 0.08em; box-shadow: 4px 5px 0 rgba(17, 22, 21, 0.24); }
+    .shaker-label b { display: block; margin-top: 5px; color: var(--vermilion-500); font-size: 13px; letter-spacing: -0.04em; }
+    .shaker-base { position: absolute; bottom: 2px; left: 50%; width: 188px; height: 16px; transform: translateX(-50%); border-radius: 50%; background: rgba(0, 0, 0, 0.42); filter: blur(4px); }
+
+    .prompt-strip { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 0 auto 18px; color: var(--citrus-500); font: 700 11px var(--mono); letter-spacing: 0.08em; }
+    .prompt-strip::before, .prompt-strip::after { content: ""; width: 25px; height: 1px; background: rgba(242, 181, 68, 0.42); }
+
+    .ticket-stack {
+      display: grid;
+      gap: 10px;
+      max-width: 380px;
+      margin: 0 auto;
+      visibility: hidden;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(18px);
+      transition: visibility 0ms linear 420ms, opacity 220ms ease, transform 420ms var(--motion-enter);
+    }
+    .home-stage.is-open .ticket-stack { visibility: visible; opacity: 1; pointer-events: auto; transform: translateY(0); transition-delay: 0ms; }
+    .ticket {
+      position: relative;
+      display: grid;
+      grid-template-columns: 56px minmax(0, 1fr) 22px;
+      align-items: center;
+      min-height: 68px;
+      padding: 11px 14px;
+      border: 0;
+      color: var(--ink-900);
+      background: var(--ticket-100);
+      text-align: left;
+      cursor: pointer;
+      clip-path: polygon(0 0, 100% 0, 100% 88%, 96% 100%, 90% 88%, 84% 100%, 78% 88%, 72% 100%, 66% 88%, 60% 100%, 54% 88%, 48% 100%, 42% 88%, 36% 100%, 30% 88%, 24% 100%, 18% 88%, 12% 100%, 6% 88%, 0 100%);
+      opacity: 0;
+      transform: translateY(10px) scale(0.985);
+      transition: transform 260ms var(--motion-enter), background 220ms ease, opacity 220ms ease;
+    }
+    .home-stage.is-open .ticket { opacity: 1; transform: translateY(0) scale(1); }
+    .home-stage.is-open .ticket:nth-child(1) { transition-delay: 70ms; }
+    .home-stage.is-open .ticket:nth-child(2) { transition-delay: 120ms; }
+    .home-stage.is-open .ticket:nth-child(3) { transition-delay: 170ms; }
+    .home-stage.is-open .ticket:nth-child(4) { transition-delay: 220ms; }
+    .ticket:hover, .ticket:focus-visible { transform: translateX(5px); background: #fff8e8; }
+    .ticket.is-selected { background: var(--citrus-500); }
+    .ticket-label { color: #63726d; font: 700 10px var(--mono); letter-spacing: 0.06em; }
+    .ticket.is-selected .ticket-label { color: rgba(17, 22, 21, 0.64); }
+    .ticket-copy { display: grid; gap: 3px; }
+    .ticket-copy strong { font-size: 15px; }
+    .ticket-copy span { color: #6e7773; font-size: 11px; }
+    .ticket.is-selected .ticket-copy span { color: rgba(17, 22, 21, 0.67); }
+    .ticket svg { width: 18px; height: 18px; color: var(--bottle-700); }
+
+    .status-message { min-height: 20px; margin: 14px auto 0; color: var(--muted-500); font-size: 12px; text-align: center; }
+    .status-message.is-active { color: var(--citrus-500); }
+
+    .task-surface {
+      position: absolute;
+      z-index: 4;
+      inset: 0;
+      display: grid;
+      align-content: start;
+      gap: 24px;
+      padding: 28px 24px 34px;
+      overflow-y: auto;
+      color: var(--ink-100);
+      background: #151d1a;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(28px) scale(0.985);
+      clip-path: inset(12px 12px 12px 12px round 28px);
+      visibility: hidden;
+      transition: visibility 0ms linear 420ms, opacity 240ms ease, transform 420ms var(--motion-enter), clip-path 420ms var(--motion-enter);
+    }
+    .task-surface.is-visible { visibility: visible; opacity: 1; pointer-events: auto; transform: translateY(0) scale(1); clip-path: inset(0 0 0 0 round 0); transition-delay: 0ms; }
+    .task-top { display: flex; align-items: center; justify-content: space-between; min-height: 44px; }
+    .back-button { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 12px 0 0; border: 0; color: var(--ink-100); background: transparent; font-size: 13px; cursor: pointer; }
+    .back-button svg { width: 18px; height: 18px; }
+    .task-route { color: var(--citrus-500); font: 700 10px var(--mono); letter-spacing: 0.11em; }
+    .task-copy { max-width: 330px; }
+    .task-kicker { margin: 0 0 8px; color: var(--citrus-500); font: 700 10px var(--mono); letter-spacing: 0.12em; }
+    .task-copy h2 { margin: 0; font-size: 32px; line-height: 1.12; letter-spacing: -0.05em; }
+    .task-copy p { margin: 12px 0 0; color: var(--muted-500); font-size: 13px; line-height: 1.55; }
+    .task-copy,
+    .task-content,
+    .task-primary,
+    .task-secondary {
+      transition: opacity 180ms ease, transform 260ms var(--motion-enter);
+    }
+    .task-surface.is-swapping .task-copy,
+    .task-surface.is-swapping .task-content,
+    .task-surface.is-swapping .task-primary,
+    .task-surface.is-swapping .task-secondary {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    .task-content { display: grid; gap: 14px; min-height: 220px; }
+    .recipe-ticket { position: relative; padding: 20px 18px 24px; color: var(--ink-900); background: var(--ticket-100); clip-path: polygon(0 0, 100% 0, 100% 92%, 95% 100%, 90% 92%, 85% 100%, 80% 92%, 75% 100%, 70% 92%, 65% 100%, 60% 92%, 55% 100%, 50% 92%, 45% 100%, 40% 92%, 35% 100%, 30% 92%, 25% 100%, 20% 92%, 15% 100%, 10% 92%, 5% 100%, 0 92%); }
+    .recipe-ticket small { display: block; color: #65716c; font: 700 10px var(--mono); letter-spacing: 0.11em; }
+    .recipe-ticket h3 { margin: 12px 0 6px; font-size: 27px; letter-spacing: -0.04em; }
+    .recipe-ticket p { margin: 0; color: #6e7773; font-size: 12px; line-height: 1.5; }
+    .recipe-ticket .ticket-stamp { display: inline-flex; margin-top: 18px; padding: 6px 8px; color: var(--vermilion-500); border: 1px solid rgba(217, 87, 63, 0.55); font: 700 10px var(--mono); transform: rotate(-3deg); }
+    .ingredient-tray { display: flex; flex-wrap: wrap; gap: 9px; align-content: start; padding: 18px; border: 1px solid var(--line); background: rgba(28, 37, 34, 0.76); }
+    .ingredient-chip { min-height: 44px; padding: 0 13px; border: 1px solid rgba(241, 235, 221, 0.22); color: var(--ink-100); background: transparent; font-size: 13px; cursor: pointer; }
+    .ingredient-chip.is-selected { border-color: var(--citrus-500); color: var(--ink-900); background: var(--citrus-500); }
+    .task-list { display: grid; gap: 10px; }
+    .task-list-item { display: grid; grid-template-columns: 62px minmax(0, 1fr) 18px; gap: 12px; align-items: center; min-height: 70px; padding: 12px 14px; border: 1px solid var(--line); color: var(--ink-100); background: rgba(28, 37, 34, 0.72); text-align: left; cursor: pointer; opacity: 0; transform: translateY(10px) scale(0.985); transition: transform 260ms var(--motion-enter), opacity 220ms ease, border-color 220ms ease, background 220ms ease; }
+    .task-surface.is-visible .task-list-item { opacity: 1; transform: translateY(0) scale(1); }
+    .task-surface.is-visible .task-list-item:nth-child(1) { transition-delay: 80ms; }
+    .task-surface.is-visible .task-list-item:nth-child(2) { transition-delay: 130ms; }
+    .task-surface.is-visible .task-list-item:nth-child(3) { transition-delay: 180ms; }
+    .task-list-item:hover, .task-list-item:focus-visible { border-color: var(--citrus-500); }
+    .task-list-item.is-selected { border-color: var(--citrus-500); background: rgba(242, 181, 68, 0.16); transform: translateX(4px); }
+    .task-list-item small { color: var(--citrus-500); font: 700 10px var(--mono); }
+    .task-list-item strong { display: block; font-size: 15px; }
+    .task-list-item span { display: block; margin-top: 4px; color: var(--muted-500); font-size: 11px; }
+    .task-list-item svg { width: 18px; height: 18px; color: var(--steel-300); }
+    .empty-ticket { display: grid; place-items: center; min-height: 220px; padding: 30px; border: 1px dashed rgba(241, 235, 221, 0.28); color: var(--muted-500); text-align: center; }
+    .empty-ticket strong { display: block; margin-bottom: 8px; color: var(--ink-100); font-size: 18px; }
+    .step-ticket { display: grid; gap: 12px; padding: 18px; color: var(--ink-900); background: var(--ticket-100); }
+    .step-ticket small { color: #65716c; font: 700 10px var(--mono); letter-spacing: 0.11em; }
+    .step-ticket strong { font-size: 19px; }
+    .step-ticket p { margin: 0; color: #6e7773; font-size: 13px; line-height: 1.55; }
+    .task-primary { width: 100%; min-height: 54px; margin-top: auto; border: 0; color: var(--ink-900); background: var(--citrus-500); font-weight: 800; cursor: pointer; }
+    .task-primary:hover, .task-primary:focus-visible { background: #ffca5a; }
+    .task-secondary { min-height: 44px; border: 0; color: var(--muted-500); background: transparent; cursor: pointer; }
+
+    .preview-note { max-width: 480px; margin: 18px auto 0; color: #66736f; font-size: 12px; line-height: 1.5; text-align: center; }
+
+    @media (max-width: 759px) {
+      .preview-shell { padding: 0; }
+      .preview-label, .preview-note { display: none; }
+      .app-frame { width: 100%; min-height: 100vh; border: 0; border-radius: 0; }
+      .home-stage { min-height: 100vh; }
+    }
+
+    @media (min-width: 760px) {
+      .app-frame { width: min(100%, 920px); min-height: 900px; }
+      .home-stage { display: grid; grid-template-columns: minmax(0, 1fr) 1.1fr; align-items: center; gap: 28px; min-height: 900px; padding: 72px 70px 54px; }
+      .stage-copy { grid-column: 1; grid-row: 1; max-width: 340px; text-align: left; }
+      .stage-copy h1 { max-width: 280px; font-size: 48px; }
+      .stage-copy p { max-width: 280px; }
+      .shaker-wrap { grid-column: 2; grid-row: 1; min-height: 400px; margin: 0; }
+      .prompt-strip { justify-content: flex-start; margin: 26px 0 18px; }
+      .ticket-stack { grid-column: 1 / -1; grid-row: 2; grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; max-width: none; }
+      .status-message { grid-column: 1 / -1; grid-row: 3; }
+      .task-surface { padding: 44px 70px 54px; }
+      .task-content { max-width: 620px; }
+      .task-primary { max-width: 620px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <!--
+    THESIS: A shaker opens the workbench; this refuses the category-default card-grid homepage.
+    OWN-WORLD: dark prep mat, bottle green, steel, citrus tickets, ink labels, and quiet physical depth.
+    STORY: the user sees a familiar tool, opens it, and chooses the way to begin tonight's drink.
+    FIRST VIEWPORT: a title, central shaker, one prompt, and four ticket entries revealed only after interaction.
+    FORM: home as a bar-prep ticket stack; concept seed a54a7d2b; the brief-pinned shaker structure leads.
+    FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, and DESIGN.md
+  -->
+  <main class="preview-shell">
+    <p class="preview-label">UI redesign preview / v1 / shaker entry + ticket picker</p>
+    <section class="app-frame" aria-label="今夜调酒 UI 重设计预览">
+      <div class="grain" aria-hidden="true"></div>
+      <section class="home-stage">
+        <div class="stage-copy">
+          <h1>今晚，<br />从一杯开始。</h1>
+          <p>不用先懂酒名。打开摇杯，按你手边的材料开始。</p>
+          <div class="prompt-strip">START TONIGHT</div>
+        </div>
+
+        <div class="shaker-wrap">
+          <div class="shaker-halo" aria-hidden="true"></div>
+          <button class="shaker-button" type="button" aria-label="打开调酒功能" aria-expanded="false">
+            <span class="shaker-cap" aria-hidden="true"></span>
+            <span class="shaker-neck" aria-hidden="true"></span>
+            <span class="shaker-body" aria-hidden="true"></span>
+            <span class="shaker-label" aria-hidden="true">TONIGHT<b>PREP</b></span>
+            <span class="shaker-base" aria-hidden="true"></span>
+          </button>
+        </div>
+
+        <div class="ticket-stack" aria-label="调酒功能">
+          <button class="ticket" type="button" data-mode="random">
+            <span class="ticket-label">RANDOM</span>
+            <span class="ticket-copy"><strong>随机抽一杯</strong><span>交给今晚一点灵感</span></span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 7h10l-2.5-2.5M19 17H9l2.5 2.5M17 4l2 3-2 3M7 20l-2-3 2-3"/></svg>
+          </button>
+          <button class="ticket" type="button" data-mode="match">
+            <span class="ticket-label">MATERIALS</span>
+            <span class="ticket-copy"><strong>按材料匹配</strong><span>看看手头能调什么</span></span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="9" r="4"/><path d="m12 12 7 7M15 5h4M17 3v4"/></svg>
+          </button>
+          <button class="ticket" type="button" data-mode="library">
+            <span class="ticket-label">LIBRARY</span>
+            <span class="ticket-copy"><strong>浏览酒单</strong><span>慢慢挑一杯喜欢的</span></span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 5.5A2.5 2.5 0 0 1 7.5 3H19v16H7.5A2.5 2.5 0 0 0 5 21.5v-16Z"/><path d="M5 5.5v16M9 7h6M9 11h6"/></svg>
+          </button>
+          <button class="ticket" type="button" data-mode="saved">
+            <span class="ticket-label">SAVED</span>
+            <span class="ticket-copy"><strong>我的收藏</strong><span>回到已经喜欢的配方</span></span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 4.5A2.5 2.5 0 0 1 8.5 2h7A2.5 2.5 0 0 1 18 4.5V21l-6-3-6 3V4.5Z"/></svg>
+          </button>
+        </div>
+
+        <p class="status-message" role="status" aria-live="polite">点击摇杯，打开今晚的调酒入口</p>
+      </section>
+
+      <section class="task-surface" aria-label="调酒任务预览" hidden>
+        <div class="task-top">
+          <button class="back-button" type="button" aria-label="返回摇杯首页">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg>
+            <span>回到摇杯</span>
+          </button>
+          <span class="task-route">TONIGHT / TASK</span>
+        </div>
+        <div class="task-copy">
+          <p class="task-kicker">RANDOM DRAW</p>
+          <h2>今晚想从哪里开始？</h2>
+          <p>这是 ProtoPie 交互预览。选择一个入口，看看它如何把你带到下一步。</p>
+        </div>
+        <div class="task-content"></div>
+        <button class="task-primary" type="button">抽一杯</button>
+        <button class="task-secondary" type="button" hidden>查看配方</button>
+      </section>
+    </section>
+    <p class="preview-note">这是独立设计预览，不会覆盖现有生产页面；下一步可把确认后的状态迁移到正式 App。</p>
+  </main>
+
+  <script>
+    const shaker = document.querySelector('.shaker-button');
+    const tickets = [...document.querySelectorAll('.ticket')];
+    const stage = document.querySelector('.home-stage');
+    const status = document.querySelector('.status-message');
+    const taskSurface = document.querySelector('.task-surface');
+    const taskKicker = document.querySelector('.task-kicker');
+    const taskTitle = document.querySelector('.task-copy h2');
+    const taskDescription = document.querySelector('.task-copy p:last-child');
+    const taskContent = document.querySelector('.task-content');
+    const taskPrimary = document.querySelector('.task-primary');
+    const taskSecondary = document.querySelector('.task-secondary');
+    const backButton = document.querySelector('.back-button');
+    const appFrame = document.querySelector('.app-frame');
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let taskSwapTimer = 0;
+    let activeRecipeKey = 'rainy';
+
+    const recipeBook = {
+      rainy: {
+        title: '雨夜霓虹',
+        kicker: 'CITRUS',
+        summary: '黑麦威士忌 · 粉红西柚 · 干味美思 · 盐水 · 迷迭香',
+        intro: '偏明亮的午夜一杯，适合从手头材料直接开始。',
+        summaryStamp: '34 RECIPES',
+        doneStamp: 'READY TO SERVE',
+        done: '完成了这杯调制。今晚的备料台已经收好。',
+        steps: [
+          ['STEP 01', '准备西柚', '挤出 30 ml 西柚汁，倒入摇壶。'],
+          ['STEP 02', '加入基酒', '加入黑麦威士忌、干味美思和盐水。'],
+          ['STEP 03', '加冰摇匀', '加入冰块，摇 12 秒，直到壶身发凉。'],
+          ['STEP 04', '完成点缀', '滤入酒杯，放上迷迭香或西柚皮。']
+        ]
+      },
+      sakura: {
+        title: '晚樱之吻',
+        kicker: 'FLORAL',
+        summary: '伏特加 · 接骨木花 · 樱桃 · 柠檬',
+        intro: '更轻、偏花香的一杯，适合想要柔一点的开场。',
+        summaryStamp: '34 RECIPES',
+        doneStamp: 'SOFT SERVE',
+        done: '樱桃色的收尾完成了。放松一点，今晚已经进入花香段落。',
+        steps: [
+          ['STEP 01', '冰镇酒杯', '先把鸡尾酒杯装满冰水，静置 1 分钟。'],
+          ['STEP 02', '倒入风味基底', '加入伏特加、接骨木花利口酒、樱桃汁与柠檬汁。'],
+          ['STEP 03', '加冰摇匀', '投入冰块，快速摇 12 秒，让果香和花香融合。'],
+          ['STEP 04', '滤入并点缀', '滤入冰镇酒杯，用一颗樱桃完成收尾。']
+        ]
+      },
+      sunrise: {
+        title: '海盐日出',
+        kicker: 'SALT',
+        summary: '白龙舌兰 · 西柚汁 · 青柠汁 · 海盐',
+        intro: '更明亮的开场，适合白天或胃口轻的时候。',
+        summaryStamp: '34 RECIPES',
+        doneStamp: 'BRIGHT MIX',
+        done: '这一杯完成了。柑橘和海盐已经把节奏推到清亮的位置。',
+        steps: [
+          ['STEP 01', '准备岩石杯', '在杯中加满冰块，杯口轻轻沾上海盐。'],
+          ['STEP 02', '加入基酒', '倒入白龙舌兰、西柚汁、青柠汁和糖浆。'],
+          ['STEP 03', '轻搅融合', '用吧匙搅拌 10 秒，保留清亮口感。'],
+          ['STEP 04', '完成装饰', '补一片西柚角，直接上桌。']
+        ]
+      }
+    };
+
+    function swapTaskView(update) {
+      if (prefersReducedMotion || !taskSurface.classList.contains('is-visible')) {
+        update();
+        return;
+      }
+
+      window.clearTimeout(taskSwapTimer);
+      taskSurface.classList.add('is-swapping');
+      taskSwapTimer = window.setTimeout(() => {
+        update();
+        requestAnimationFrame(() => taskSurface.classList.remove('is-swapping'));
+      }, 140);
+    }
+
+    function setTaskView({ kicker, title, description, content, primaryText, primaryAction, secondaryText = '', secondaryAction = null }) {
+      taskKicker.textContent = kicker;
+      taskTitle.textContent = title;
+      taskDescription.textContent = description;
+      taskDescription.style.color = '';
+      taskContent.innerHTML = content;
+      taskPrimary.hidden = false;
+      taskPrimary.textContent = primaryText;
+      taskPrimary.onclick = primaryAction;
+      taskSecondary.hidden = !secondaryText;
+      if (secondaryText) {
+        taskSecondary.textContent = secondaryText;
+        taskSecondary.onclick = secondaryAction;
+      } else {
+        taskSecondary.textContent = '';
+        taskSecondary.onclick = null;
+      }
+    }
+
+    function renderRecipeCard(recipe, label, body, stamp) {
+      return `<div class="recipe-ticket"><small>${label}</small><h3>${recipe.title}</h3><p>${body}</p><span class="ticket-stamp">${stamp}</span></div>`;
+    }
+
+    function renderStepCard(step) {
+      return `<div class="step-ticket"><small>${step[0]}</small><strong>${step[1]}</strong><p>${step[2]}</p></div>`;
+    }
+
+    function renderLibrarySelection() {
+      taskContent.querySelectorAll('.task-list-item').forEach((item) => {
+        const selected = item.dataset.recipe === activeRecipeKey;
+        item.classList.toggle('is-selected', selected);
+        item.setAttribute('aria-pressed', String(selected));
+      });
+    }
+
+    function setTaskVisible(visible) {
+      taskSurface.classList.remove('is-swapping');
+      window.clearTimeout(taskSwapTimer);
+      if (visible) {
+        taskSurface.hidden = false;
+        requestAnimationFrame(() => taskSurface.classList.add('is-visible'));
+        appFrame.classList.add('is-task-open');
+        return;
+      }
+      appFrame.classList.remove('is-task-open');
+      taskSurface.classList.remove('is-visible');
+      if (prefersReducedMotion) {
+        taskSurface.hidden = true;
+        return;
+      }
+      window.setTimeout(() => { taskSurface.hidden = true; }, 420);
+    }
+
+    function resetHome() {
+      setTaskVisible(false);
+      stage.classList.remove('is-open');
+      shaker.classList.remove('is-open');
+      shaker.setAttribute('aria-expanded', 'false');
+      tickets.forEach((item) => item.classList.remove('is-selected'));
+      status.textContent = '点击摇杯，打开今晚的调酒入口';
+      status.classList.remove('is-active');
+    }
+
+    function showRecipe(recipeKey = 'rainy', stepIndex = 0) {
+      const recipe = recipeBook[recipeKey] ?? recipeBook.rainy;
+      const isFallback = !recipeBook[recipeKey];
+      const step = recipe.steps[stepIndex] ?? recipe.steps[recipe.steps.length - 1];
+      const done = stepIndex >= recipe.steps.length;
+      activeRecipeKey = isFallback ? 'rainy' : recipeKey;
+      swapTaskView(() => {
+        setTaskView({
+          kicker: `RECIPE / ${recipe.kicker}`,
+          title: done ? '这一杯完成了' : recipe.title,
+          description: done ? recipe.done : recipe.intro,
+          content: done
+            ? renderRecipeCard(recipe, 'DONE / TONIGHT', recipe.done, recipe.doneStamp)
+            : renderStepCard(step),
+          primaryText: done ? '重新开始' : (stepIndex === recipe.steps.length - 1 ? '完成调制' : '下一步'),
+          primaryAction: () => (done ? showRecipe(recipeKey, 0) : showRecipe(recipeKey, stepIndex + 1)),
+          secondaryText: done ? '返回酒单' : (stepIndex > 0 ? '上一步' : ''),
+          secondaryAction: done ? showLibrary : (stepIndex > 0 ? () => showRecipe(recipeKey, stepIndex - 1) : null)
+        });
+      });
+    }
+
+    function showRandomResult() {
+      const recipe = recipeBook.rainy;
+      activeRecipeKey = 'rainy';
+      swapTaskView(() => {
+        setTaskView({
+          kicker: 'RANDOM RESULT',
+          title: `抽到：${recipe.title}`,
+          description: recipe.intro,
+          content: renderRecipeCard(recipe, 'TONIGHT\'S PICK / 01', recipe.summary, recipe.summaryStamp),
+          primaryText: '查看配方',
+          primaryAction: () => showRecipe('rainy', 0)
+        });
+      });
+    }
+
+    function showMatchResult() {
+      const recipe = recipeBook.rainy;
+      activeRecipeKey = 'rainy';
+      swapTaskView(() => {
+        setTaskView({
+          kicker: 'MATCH RESULT',
+          title: '找到一杯适合你的',
+          description: '按命中的材料排序，先从最接近的配方开始。',
+          content: renderRecipeCard(recipe, '4 MATERIALS MATCHED', recipe.summary, 'BEST MATCH'),
+          primaryText: '查看配方',
+          primaryAction: () => showRecipe('rainy', 0)
+        });
+      });
+    }
+
+    function showMaterials() {
+      swapTaskView(() => {
+        setTaskView({
+          kicker: 'MATERIALS / 0–5',
+          title: '手边有什么？',
+          description: '先点选材料，匹配结果会保留你的选择。',
+          content: `<div class="ingredient-tray" aria-label="材料选择">
+            <button class="ingredient-chip" type="button">黑麦威士忌</button>
+            <button class="ingredient-chip" type="button">粉红西柚</button>
+            <button class="ingredient-chip" type="button">干味美思</button>
+            <button class="ingredient-chip" type="button">盐水</button>
+            <button class="ingredient-chip" type="button">迷迭香</button>
+          </div>`,
+          primaryText: '匹配配方',
+          primaryAction: () => {
+            const selected = taskContent.querySelectorAll('.ingredient-chip.is-selected').length;
+            if (!selected) {
+              taskDescription.textContent = '先选至少一种材料，再开始匹配。';
+              taskDescription.style.color = 'var(--vermilion-500)';
+              return;
+            }
+            taskDescription.style.color = '';
+            showMatchResult();
+          }
+        });
+        taskContent.querySelectorAll('.ingredient-chip').forEach((chip) => chip.addEventListener('click', () => {
+          chip.classList.toggle('is-selected');
+        }));
+      });
+    }
+
+    function showLibrary() {
+      swapTaskView(() => {
+        const selectedRecipe = recipeBook[activeRecipeKey] ?? recipeBook.rainy;
+        setTaskView({
+          kicker: 'LIBRARY / 34 RECIPES',
+          title: '今晚的酒单',
+          description: '按你喜欢的方向慢慢挑，不需要先做决定。',
+          content: `<div class="task-list" aria-label="酒款列表">
+            <button class="task-list-item" type="button" data-recipe="rainy" aria-pressed="false"><small>01 / CITRUS</small><span><strong>雨夜霓虹</strong><span>黑麦威士忌 · 西柚</span></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></button>
+            <button class="task-list-item" type="button" data-recipe="sakura" aria-pressed="false"><small>02 / FLORAL</small><span><strong>晚樱之吻</strong><span>金酒 · 樱桃 · 柠檬</span></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></button>
+            <button class="task-list-item" type="button" data-recipe="sunrise" aria-pressed="false"><small>03 / SALT</small><span><strong>海盐日出</strong><span>龙舌兰 · 柑橘 · 盐</span></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></button>
+          </div>`,
+          primaryText: `打开${selectedRecipe.title}`,
+          primaryAction: () => showRecipe(activeRecipeKey, 0)
+        });
+
+        const items = [...taskContent.querySelectorAll('.task-list-item')];
+        items.forEach((item) => item.addEventListener('click', () => {
+          activeRecipeKey = item.dataset.recipe in recipeBook ? item.dataset.recipe : 'rainy';
+          renderLibrarySelection();
+          taskPrimary.textContent = `打开${recipeBook[activeRecipeKey].title}`;
+          taskPrimary.onclick = () => showRecipe(activeRecipeKey, 0);
+          showRecipe(activeRecipeKey, 0);
+        }));
+        renderLibrarySelection();
+      });
+    }
+
+    function showSaved() {
+      swapTaskView(() => {
+        setTaskView({
+          kicker: 'SAVED / YOUR RECIPES',
+          title: '我的收藏',
+          description: '把喜欢的配方留在这里，下次从摇杯直接回来。',
+          content: '<div class="empty-ticket"><div><strong>还没有收藏配方</strong><span>先去酒单挑一杯，喜欢它之后再回来。</span></div></div>',
+          primaryText: '去浏览酒单',
+          primaryAction: () => showLibrary()
+        });
+      });
+    }
+
+    function openMode(mode) {
+      setTaskVisible(true);
+      if (mode === 'random') {
+        swapTaskView(() => {
+          setTaskView({
+            kicker: 'RANDOM DRAW',
+            title: '今晚想从哪里开始？',
+            description: '让 34 款配方替你先做决定。',
+            content: '<div class="empty-ticket"><div><strong>交给今晚一点灵感</strong><span>连续抽取不会重复上一杯。</span></div></div>',
+            primaryText: '抽一杯',
+            primaryAction: showRandomResult
+          });
+        });
+      } else if (mode === 'match') {
+        showMaterials();
+      } else if (mode === 'library') {
+        showLibrary();
+      } else {
+        showSaved();
+      }
+    }
+
+    shaker.addEventListener('click', () => {
+      const open = shaker.classList.toggle('is-open');
+      stage.classList.toggle('is-open', open);
+      shaker.setAttribute('aria-expanded', String(open));
+      status.textContent = open ? '选择一种今晚的开始方式' : '点击摇杯，打开今晚的调酒入口';
+      status.classList.toggle('is-active', open);
+    });
+
+    tickets.forEach((ticket) => ticket.addEventListener('click', () => {
+      tickets.forEach((item) => item.classList.remove('is-selected'));
+      ticket.classList.add('is-selected');
+      openMode(ticket.dataset.mode);
+    }));
+
+    backButton.addEventListener('click', resetHome);
+
+  </script>
+</body>
+</html>
